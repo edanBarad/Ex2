@@ -45,19 +45,20 @@ public class SCell implements Cell {
     }
 
     public void calcType(){
-        if (line == null || line.isEmpty()){
+        /*if (line == null || line.isEmpty()){
             return;
         }
-        else if (isNumber(this.line)){
+        else */if (isNumber(this.line)){
             this.type = Ex2Utils.NUMBER;
         }
-        else if(this.line.charAt(0) == '='){
+        else if(!this.line.isEmpty() && this.line.charAt(0) == '='){
             this.line = this.line.toUpperCase();
-            if (this.value != Double.MIN_VALUE && this.value != Double.MAX_VALUE){
-                this.type = Ex2Utils.ERR_FORM_FORMAT;
+            if (this.value != Double.MIN_VALUE && this.value != Double.MAX_VALUE){  //Valid value
+                this.type = Ex2Utils.FORM;
             }else if (this.isForm(this.line)) {
                 this.type = Ex2Utils.FORM;
-            }
+            }else if(this.value == Double.MIN_VALUE) this.type = Ex2Utils.ERR_FORM_FORMAT;
+            else if(this.value == Double.MAX_VALUE) this.type = Ex2Utils.ERR_CYCLE_FORM;
         }
         else this.type = Ex2Utils.TEXT;
     }
@@ -109,7 +110,7 @@ public class SCell implements Cell {
 
     //checking if the given text is a valid formula
     public boolean isForm(String form) {
-        if (!this.line.isEmpty() && !Double.isNaN(this.value)) return true;
+        if (!this.line.isEmpty() && !Double.isNaN(this.value)) return false;
         try {
             if (form == null || form.isEmpty() || form.replace("=", "").isEmpty() || form.charAt(0) != '=')
                 return false;

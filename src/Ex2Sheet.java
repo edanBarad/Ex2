@@ -30,23 +30,28 @@ public class Ex2Sheet implements Sheet {
             try {
                 ans = Double.toString(current.computeForm(current.getData().replace("=", "")));
             } catch (NumberFormatException e) {  //Other cell might be mentioned
-                try {
-                    //System.out.println("Before: " + ans);
-                    ans = transForm(current.getData());
-                    //System.out.println("After: " + ans);
-                    current.setValue(current.computeForm(ans.replace("=", "")));
-                    ans = Double.toString(current.getValue());
-                    if (ans.contains("ERR")) {
+                System.out.println("Before: " + ans);
+                ans = transForm(current.getData());
+                System.out.println("ANS: " + ans);
+                if (ans.contains(Ex2Utils.ERR_FORM)) {
+                    if (get(ans.substring(ans.indexOf('*') + 1)) == current){    //cycle found
+                        System.out.println("CYCLE FOUND!");
+                        current.setValue(Double.MAX_VALUE);
+                        System.out.println("TYPE: " + current.getType());
+                        return Ex2Utils.ERR_CYCLE;
+                    }
+                    else {
                         current.setType(Ex2Utils.ERR_FORM_FORMAT);
                         return Ex2Utils.ERR_FORM;
                     }
+                }else {
+                    current.setValue(current.computeForm(ans.replace("=", "")));
+                    ans = Double.toString(current.getValue());
                     current.setType(Ex2Utils.FORM);
-                    //System.out.println("Form transferred!");
-                } catch (Exception j) {
-                    current.setType(Ex2Utils.ERR_FORM_FORMAT);
-                    ans = Ex2Utils.ERR_FORM;
                 }
+                System.out.println("After: " + ans);
             }
+            //return ans;
         } else if (current.getType() == Ex2Utils.ERR_FORM_FORMAT) {                                   //Invalid format
             if (current.isForm(eval(x, y))){
                 ans = Double.toString(current.computeForm(eval(x, y).replace("=", "")));
@@ -57,13 +62,15 @@ public class Ex2Sheet implements Sheet {
                 ans = Ex2Utils.ERR_FORM;
                 this.table[x][y].setType(Ex2Utils.ERR_FORM_FORMAT);
             }
-        } else if (current.getType() == Ex2Utils.ERR_CYCLE_FORM) {                                 //Invalid format
+        } else if (current.getValue() == Double.MAX_VALUE) {                                 //Invalid format
             ans = Ex2Utils.ERR_CYCLE;
         } else if (current.getType() == Ex2Utils.NUMBER) {  //Print number as is
             ans = Double.toString(current.getValue());
         }else if(current.getType() == Ex2Utils.TEXT){
             ans = current.getData();
-        }else ans = Ex2Utils.EMPTY_CELL;
+        }else{
+            ans = Ex2Utils.EMPTY_CELL;
+        }
         return ans;
     }
 
@@ -149,7 +156,7 @@ public class Ex2Sheet implements Sheet {
         String ans = null;
         SCell current = get(x, y);
         ans = current.getData();
-        if (!current.getData().isEmpty() && current.getData().charAt(0) == '=') {
+        if (!current.getData().isEmpty() && current.getData().charAt(0) == '=') {   //Formula might be found
             try {
                 ans = Double.toString(current.computeForm(ans.replace("=", "")));
                 current.setValue(Double.parseDouble(ans));
@@ -188,15 +195,17 @@ public class Ex2Sheet implements Sheet {
                     break;
                 }
             }
-            for (int i = indexOfLetter + 1; i < form.length(); i++) {
-                if (Arrays.binarySearch(operators, form.charAt(i)) > -1 || (!Character.isDigit(form.charAt(i)) && !Character.isLetter(form.charAt(i)))) {
+            for (int i = indexOfLetter + 1; i < indexOfNextOp; i++) {
+                if ((!Character.isDigit(form.charAt(i)) && !Character.isLetter(form.charAt(i)))) {
                     indexOfNextOp = i;
                     break;
                 }
             }
             if ((indexOfNextOp - indexOfLetter) > 1) {
                 SCell c = get(form.substring(indexOfLetter, indexOfNextOp));
-                if (c.getValue() == Double.MIN_VALUE || c.getType() == Ex2Utils.TEXT){
+                System.out.println("Cell is: " + form.substring(indexOfLetter, indexOfNextOp));
+                //      cell not initialized                      or not a number/formula
+                if (c.getValue() == Double.MIN_VALUE || c.getValue() == Double.MAX_VALUE || (c.getType() != Ex2Utils.NUMBER && c.getType() != Ex2Utils.FORM)){
                     return Ex2Utils.ERR_FORM + "*" + form.substring(indexOfLetter, indexOfNextOp);    //if cell is empty or a text
                 }
                 else return form.substring(0, indexOfLetter) + c.getValue() + transForm(form.substring(indexOfNextOp));
