@@ -4,10 +4,7 @@ import java.util.Arrays;
 
 public class Ex2Sheet implements Sheet {
     private SCell[][] table;
-    private final char[] operators = {'*', '+', '-', '/'};
-    // Add your code here
 
-    // ///////////////////
     public Ex2Sheet(int x, int y) {
         table = new SCell[x][y];
         for (int i = 0; i < x; i = i + 1) {
@@ -48,7 +45,6 @@ public class Ex2Sheet implements Sheet {
                     current.setType(Ex2Utils.FORM);
                 }
             }
-            //return ans;
         } else if (current.getType() == Ex2Utils.ERR_FORM_FORMAT) {                                   //Invalid format
             if (current.isForm(eval(x, y))){
                 ans = Double.toString(current.computeForm(eval(x, y).replace("=", "")));
