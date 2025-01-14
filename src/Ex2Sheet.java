@@ -29,7 +29,6 @@ public class Ex2Sheet implements Sheet {
             } catch (NumberFormatException e) {  //Other cell might be mentioned
                 ans = transForm(current.getData());
                 if (ans.contains(Ex2Utils.ERR_FORM)) {
-                    System.out.println(ans);
                     SCell otherCell = get(ans.substring(ans.indexOf('*') + 1));
                     if ((otherCell == current) || get(otherCell.getData().replace("=", "")) == current){    //cycle found
                         current.setValue(Double.MAX_VALUE);
